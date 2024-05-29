@@ -1,0 +1,5 @@
+# Ignore the "reference" folder
+reference/
+
+# Ignore .docx files
+*.docx

@@ -1,9 +1,9 @@
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
+// Company: Tsinghua University
+// Engineer: Wentao Ye
 // 
-// Create Date: 2024/5/28 15:20:00
-// Design Name: 
+// Create Date: 2024/06/22 13:50:00
+// Design Name: VLC system
 // Module Name: ppm_encoder
 // Project Name: 
 // Target Devices: 

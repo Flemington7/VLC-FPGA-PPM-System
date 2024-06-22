@@ -1,9 +1,8 @@
-`timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
 // Engineer: 
 // 
-// Create Date: 2023/12/18 15:20:33
+// Create Date: 2024/06/22 13:50:00
 // Design Name: 
 // Module Name: ppm_decoder
 // Project Name: 
@@ -18,6 +17,7 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
+`timescale 1ns / 1ps
 
 module ppm_decoder(
     input wire clk,

@@ -1,4 +1,3 @@
-`timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
 // Engineer: 
@@ -20,10 +19,14 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 // convert the serial data to parallel data
+
+`timescale 1ns / 1ps
+
 module shift_register (
     input wire clk,
     input wire rst,
     input wire serial_in,
+    input wire data_ready_rst,
     output reg [7:0] parallel_out,
     output reg data_ready
 );
@@ -32,22 +35,28 @@ reg [7:0] shift_reg;
 reg [3:0] count;
 reg data_flag;
 
-always @(posedge clk or posedge rst) begin
+always @(posedge clk or negedge rst) begin
     if (!rst) begin
         shift_reg <= 8'b0;
         count <= 4'd0;
         data_flag <= 0;
         data_ready <= 0;
-    end else if (serial_in == 1'b0 && data_flag == 1'b0) begin // detect the start bit: 0, after which is the data bits
-        data_flag <= 1;
-    end else if (data_flag) begin
-        shift_reg <= {shift_reg[6:0], serial_in};
-        count <= count + 1;
-        if (count == 4'd7) begin
-            parallel_out <= shift_reg;
-            data_ready <= 1;
-            data_flag <= 0;
-            count <= 4'd0;
+    end else begin 
+        if (!data_ready_rst) begin
+            data_ready <= 0;
+        end else begin
+            if (serial_in == 1'b0 && data_flag == 1'b0) begin // detect the start bit: 0, after which is the data bits
+                data_flag <= 1;
+            end else if (data_flag == 1'b1) begin
+                shift_reg <= {shift_reg[6:0], serial_in};
+                count <= count + 1;
+                if (count == 4'd7) begin
+                    parallel_out <= shift_reg;
+                    data_ready <= 1;
+                    data_flag <= 0;
+                    count <= 4'd0;
+                end
+            end
         end
     end
 end
@@ -186,7 +195,8 @@ parameter EOF = 2'b11;
 
 // shift_register
 wire [7:0] parallel_data;
-reg data_ready;
+wire data_ready;
+reg data_ready_rst;
 
 reg [1:0] state;
 reg [3:0] data_length;
@@ -226,7 +236,8 @@ shift_register u_shift_register (
     .rst(rst),
     .serial_in(serial_in),
     .parallel_out(parallel_data),
-    .data_ready(data_ready)
+    .data_ready(data_ready),
+    .data_ready_rst(data_ready_rst)
 );
 
 always @(posedge clk or negedge rst) begin
@@ -243,7 +254,7 @@ always @(posedge clk or negedge rst) begin
         address <= 4'd0;
         order <= IDLE;
 
-        data_ready <= 0;
+        data_ready_rst <= 1;
     end else begin
         case (state)
             state_IDLE: begin 
@@ -259,8 +270,8 @@ always @(posedge clk or negedge rst) begin
                 order <= IDLE;
 
                 if (data_ready) begin
-                    data_temp <= parallel_out; // load the data from 8-bit shift register
-                    data_ready <= 0; // reset the data_ready signal
+                    data_temp <= parallel_data; // load the data from 8-bit shift register
+                    data_ready_rst <= 0; // reset the data ready signal
 
                     state <= state_memory;
                     data_length <= 4'd1; // set the maximum data length to 1 byte
@@ -274,16 +285,6 @@ always @(posedge clk or negedge rst) begin
             end
             state_memory: begin
                 clk_count <= clk_count + 1;
-                if (data_count < data_length) begin
-                    if (data_ready) begin
-                        data_temp <= parallel_out;
-                        data_ready <= 0;
-
-                        data_count <= data_count + 1;
-                        control <= 1;
-                        address <= data_count;
-                    end
-                end
                 if (clk_count == 9'd127) begin // delay 128 clock cycles, wait for the generation of SOF signal, after that
                     state <= state_send; 
                     control <= 0;

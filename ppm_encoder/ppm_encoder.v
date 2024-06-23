@@ -141,13 +141,13 @@ always @(posedge clk or negedge rst) begin
             SOF: begin 
                 if(clk_count_ppm == 0) begin
                     Dout <= 0;
-                end else if(clk_count_ppm == 9'd15) begin
+                end else if(clk_count_ppm == 9'd16) begin
                     Dout <= 1;
-                end else if(clk_count_ppm == 9'd79) begin
+                end else if(clk_count_ppm == 9'd80) begin
                     Dout <= 0;
-                end else if(clk_count_ppm == 9'd95) begin
+                end else if(clk_count_ppm == 9'd96) begin
                     Dout <= 1;
-                end else if(clk_count_ppm == 9'd127) begin
+                end else if(clk_count_ppm == 9'd128) begin
                     Dout <= 1; // default value
                 end
             end
@@ -163,9 +163,9 @@ always @(posedge clk or negedge rst) begin
             EOF: begin
                 if(clk_count_ppm == 0) begin
                     Dout <= 1;
-                end else if(clk_count_ppm == 9'd31) begin
+                end else if(clk_count_ppm == 9'd32) begin
                     Dout <= 0;
-                end else if(clk_count_ppm == 9'd47) begin
+                end else if(clk_count_ppm == 9'd48) begin
                     Dout <= 1;
                 end
             end
@@ -201,10 +201,9 @@ wire data_ready;
 reg data_ready_rst;
 
 reg [1:0] state;
-reg [3:0] data_length;
 reg [7:0] data_temp;
 
-wire [7:0] data_line1;
+wire [7:0] data_line;
 reg [9:0] clk_count;
 reg [3:0] bit_count; // 2-bit counter
 
@@ -221,13 +220,13 @@ ppm_memory ppm_memory_dut1(
     .M_in(data_temp),
     .control(control),
     .address(address),
-    .M_out(data_line1)
+    .M_out(data_line)
 );
 
 ppm_encoder_tx ppm_encoder_tx_dut1(
     .clk(clk),
     .rst(rst),                 
-    .in_ppm(data_line1),
+    .in_ppm(data_line),
     .order(order),
     .clk_count_ppm(clk_count),
     .bit_count_ppm(bit_count),
@@ -246,7 +245,6 @@ shift_register u_shift_register (
 always @(posedge clk or negedge rst) begin
     if (!rst) begin
         state <= state_IDLE;
-        data_length <= 4'd1;
         data_temp <= 8'd0;
         bit_count <= 'd0;
         
@@ -264,7 +262,6 @@ always @(posedge clk or negedge rst) begin
         case (state)
             state_IDLE: begin 
                 state <= state_IDLE;
-                data_length <= 4'd1;
                 data_temp <= 8'd0;       
                 bit_count <= 4'd0;
 
@@ -273,12 +270,12 @@ always @(posedge clk or negedge rst) begin
                 control <= 0;
                 order <= IDLE;
 
+                flag <= 0;
                 if (data_ready) begin
                     data_temp <= parallel_data; // load the data from 8-bit shift register
                     data_ready_rst <= 0; // reset the data ready signal
 
                     state <= state_memory;
-                    data_length <= 4'd1; // set the maximum data length to 1 byte
 
                     control <= 1; // read 1 byte data
 

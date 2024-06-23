@@ -252,7 +252,7 @@ always @(posedge clk or negedge rst) begin
         
         control <= 0;
         address <= ADDRESS;
-        
+
         order <= IDLE;
 
         data_ready_rst <= 1;
@@ -286,7 +286,6 @@ always @(posedge clk or negedge rst) begin
                 if (clk_count == 9'd127) begin // delay 128 clock cycles, wait for the generation of SOF signal
                     state <= state_send; 
                     control <= 0;
-                    address <= 0;
                     order <= DATA; // start to send data
                     clk_count <= 0;
                     bit_count <= 4'd0;
@@ -300,18 +299,15 @@ always @(posedge clk or negedge rst) begin
                     if (bit_count == 4'd6) begin  // send all the data
                         bit_count <= 4'd0;
                         control <= 0;
-                        address <= 4'd0;
                         state <= state_end; 
                         //EOF
                         order <= EOF;   
                         end
-                    end
                 end
             end
             state_end: begin 
                 clk_count <= clk_count + 1;
                 if (clk_count == 9'd63) begin // delay 64 clock cycles, wait for the generation of EOF signal
-                    data_count <= 0;
                     state <= state_IDLE; 
                     order <= IDLE;
                 end

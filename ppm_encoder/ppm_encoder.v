@@ -205,7 +205,7 @@ reg [7:0] data_temp;
 
 wire [7:0] data_line;
 reg [9:0] clk_count;
-reg [3:0] bit_count; // 2-bit counter
+reg [3:0] double_bit_count; // 2-bit counter
 
 reg control;
 reg [3:0] address;
@@ -229,7 +229,7 @@ ppm_encoder_tx ppm_encoder_tx_dut1(
     .in_ppm(data_line),
     .order(order),
     .clk_count_ppm(clk_count),
-    .bit_count_ppm(bit_count),
+    .bit_count_ppm(double_bit_count),
     .Dout(Dout)
 );
 
@@ -246,7 +246,7 @@ always @(posedge clk or negedge rst) begin
     if (!rst) begin
         state <= state_IDLE;
         data_temp <= 8'd0;
-        bit_count <= 'd0;
+        double_bit_count <= 4'd0;
         
         clk_count <= 9'd0;
         
@@ -263,7 +263,7 @@ always @(posedge clk or negedge rst) begin
             state_IDLE: begin 
                 state <= state_IDLE;
                 data_temp <= 8'd0;       
-                bit_count <= 4'd0;
+                double_bit_count <= 4'd0;
 
                 clk_count <= 9'd0;
                 
@@ -290,7 +290,7 @@ always @(posedge clk or negedge rst) begin
                     control <= 0;
                     order <= DATA; // start to send data
                     clk_count <= 0;
-                    bit_count <= 4'd0;
+                    double_bit_count <= 4'd0;
                     flag <= ~flag;
                 end  
             end
@@ -298,10 +298,10 @@ always @(posedge clk or negedge rst) begin
                 clk_count <= clk_count + 1;
                 if (clk_count == 9'd127) begin
                     clk_count <= 0; 
-                    bit_count <= bit_count + 2;
+                    double_bit_count <= double_bit_count + 1;
                     flag <= ~flag;
-                    if (bit_count == 4'd6) begin  // send all the data
-                        bit_count <= 4'd0;
+                    if (double_bit_count == 4'd3) begin  // send all the data
+                        double_bit_count <= 4'd0;
                         control <= 0;
                         state <= state_end;
                         //EOF

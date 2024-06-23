@@ -212,6 +212,8 @@ reg control;
 reg [3:0] address;
 reg [1:0] order;
 
+reg flag;
+
 // module instantiation
 ppm_memory ppm_memory_dut1(
     .clk(clk),
@@ -256,6 +258,8 @@ always @(posedge clk or negedge rst) begin
         order <= IDLE;
 
         data_ready_rst <= 1;
+
+        flag <= 0;
     end else begin
         case (state)
             state_IDLE: begin 
@@ -279,6 +283,7 @@ always @(posedge clk or negedge rst) begin
                     control <= 1; // read 1 byte data
 
                     order <= SOF; // start generate SOF signal
+                    flag <= ~flag;
                 end
             end
             state_memory: begin
@@ -289,6 +294,7 @@ always @(posedge clk or negedge rst) begin
                     order <= DATA; // start to send data
                     clk_count <= 0;
                     bit_count <= 4'd0;
+                    flag <= ~flag;
                 end  
             end
             state_send: begin
@@ -296,10 +302,11 @@ always @(posedge clk or negedge rst) begin
                 if (clk_count == 9'd127) begin
                     clk_count <= 0; 
                     bit_count <= bit_count + 2;
+                    flag <= ~flag;
                     if (bit_count == 4'd6) begin  // send all the data
                         bit_count <= 4'd0;
                         control <= 0;
-                        state <= state_end; 
+                        state <= state_end;
                         //EOF
                         order <= EOF;   
                         end

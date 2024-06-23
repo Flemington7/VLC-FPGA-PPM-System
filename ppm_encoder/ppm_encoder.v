@@ -51,7 +51,7 @@ always @(posedge clk or negedge rst) begin
                 shift_reg <= {shift_reg[6:0], serial_in};
                 count <= count + 1;
                 if (count == 4'd8) begin
-                    parallel_out <= shift_reg;
+                    parallel_out <= {shift_reg[0], shift_reg[1], shift_reg[2], shift_reg[3], shift_reg[4], shift_reg[5], shift_reg[6], shift_reg[7]}; // output the parallel data
                     data_ready <= 1;
                     data_flag <= 0;
                     count <= 4'd0;
@@ -118,16 +118,16 @@ wire [7:0] data_1;
 // PPM encode
 // Calculate the first pulse position (data_0) based on the input PPM data (in_ppm)
 // bit_count_ppm is a 2-bit counter used to select which 2-bit segment of in_ppm to process
-// 1. Left shift in_ppm by (bit_count_ppm * 2) to select the relevant 2-bit segment
-// 2. Mask the shifted value with 8'b11000000 to isolate the 2-bit segment
+// 1. Right shift in_ppm by (bit_count_ppm * 2) to select the relevant 2-bit segment
+// 2. Mask the shifted value with 8'b00000011 to isolate the 2-bit segment
 // 3. Multiply the isolated 2-bit value by 2 and add 1 to determine the pulse position (ensures it's an odd number)
 // 4. Multiply by 16 to scale the pulse position to the appropriate time window, so transmit 2-bit cost 128 clk cycle
-assign data_0 = 16 * (((in_ppm << (bit_count_ppm * 2)) & 8'b11000000) * 2 + 1);
+assign data_0 = 16 * (((in_ppm >> (bit_count_ppm * 2)) & 8'b00000011) * 2 + 1);
 
 // Calculate the second pulse position (data_1) based on the same 2-bit segment
 // This follows the same steps as data_0, but adds an additional 16 to shift the pulse position
 // This provides a second time point in the same time window for the pulse
-assign data_1 = 16 * (((in_ppm << (bit_count_ppm * 2)) & 8'b11000000) * 2 + 1) + 16;
+assign data_1 = 16 * (((in_ppm >> (bit_count_ppm * 2)) & 8'b00000011) * 2 + 1) + 16;
 
                
 always @(posedge clk or negedge rst) begin

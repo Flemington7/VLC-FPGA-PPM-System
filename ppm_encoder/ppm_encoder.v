@@ -155,7 +155,7 @@ always @(posedge clk or negedge rst) begin
                 if(clk_count_ppm == 0) begin
                     Dout <= 1;
                 end else if(clk_count_ppm == data_0) begin
-                    Dout <= 0; // high level is effective
+                    Dout <= 0;
                 end else if(clk_count_ppm == data_1) begin
                     Dout <= 1;
                 end               
@@ -205,7 +205,7 @@ reg [7:0] data_temp;
 
 wire [7:0] data_line;
 reg [9:0] clk_count;
-reg [3:0] double_bit_count; // 2-bit counter
+reg [1:0] double_bit_count; // 2-bit counter
 
 reg control;
 reg [3:0] address;
@@ -246,7 +246,7 @@ always @(posedge clk or negedge rst) begin
     if (!rst) begin
         state <= state_IDLE;
         data_temp <= 8'd0;
-        double_bit_count <= 4'd0;
+        double_bit_count <= 2'd0;
         
         clk_count <= 9'd0;
         
@@ -263,7 +263,7 @@ always @(posedge clk or negedge rst) begin
             state_IDLE: begin 
                 state <= state_IDLE;
                 data_temp <= 8'd0;       
-                double_bit_count <= 4'd0;
+                double_bit_count <= 2'd0;
 
                 clk_count <= 9'd0;
                 
@@ -290,7 +290,7 @@ always @(posedge clk or negedge rst) begin
                     control <= 0;
                     order <= DATA; // start to send data
                     clk_count <= 0;
-                    double_bit_count <= 4'd0;
+                    double_bit_count <= 2'd0;
                     flag <= ~flag;
                 end  
             end
@@ -300,8 +300,8 @@ always @(posedge clk or negedge rst) begin
                     clk_count <= 0; 
                     double_bit_count <= double_bit_count + 1;
                     flag <= ~flag;
-                    if (double_bit_count == 4'd3) begin  // send all the data
-                        double_bit_count <= 4'd0;
+                    if (double_bit_count == 2'd3) begin  // send all the data
+                        double_bit_count <= 2'd0;
                         control <= 0;
                         state <= state_end;
                         //EOF

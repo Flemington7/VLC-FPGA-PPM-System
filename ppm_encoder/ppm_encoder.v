@@ -265,6 +265,8 @@ always @(posedge clk or negedge rst) begin
                 data_temp <= 8'd0;       
                 double_bit_count <= 2'd0;
 
+                data_ready_rst <= 1; // enable the data ready signal
+
                 clk_count <= 9'd0;
                 
                 control <= 0;

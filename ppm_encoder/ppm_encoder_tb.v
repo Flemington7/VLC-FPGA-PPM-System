@@ -43,7 +43,7 @@ module ppm_encoder_tb;
     initial begin
     // Initialize Inputs
     rst = 1;
-    Din = 0;
+    Din = 1;
 
     // 重置
     #10 rst = 0;
@@ -72,7 +72,7 @@ module ppm_encoder_tb;
     Din = 1; // end
     #590;
 
-    Din = 0;
+    Din = 1;
 
     // delay ppm_decode
     #800000
@@ -97,7 +97,7 @@ module ppm_encoder_tb;
     Din = 1; // end
     #590;
 
-    Din = 0;
+    Din = 1;
 
     // delay ppm_decode
     #800000
@@ -122,7 +122,7 @@ module ppm_encoder_tb;
     Din = 1; // end
     #590;
 
-    Din = 0;
+    Din = 1;
     // delay ppm_decode
     #800000
 
@@ -146,7 +146,7 @@ module ppm_encoder_tb;
     Din = 1; // end
     #590;
 
-    Din = 0;
+    Din = 1;
 
     // delay ppm_decode
     #800000
@@ -171,7 +171,7 @@ module ppm_encoder_tb;
     Din = 1; // end
     #590;
 
-    Din = 0;
+    Din = 1;
 
     // delay ppm_decode
     #800000
@@ -196,8 +196,8 @@ module ppm_encoder_tb;
     Din = 1; // end
     #590;
 
-    Din = 0;
-    #5900;
+    Din = 1;
+    #59000;
 
     Din = 0; // flag
     #590;
@@ -218,8 +218,8 @@ module ppm_encoder_tb;
     Din = 1; // end
     #590;
 
-    Din = 0;
-    #5900;
+    Din = 1;
+    #59000;
 
     Din = 0; // flag
     #590;
@@ -240,7 +240,7 @@ module ppm_encoder_tb;
     Din = 1; // end
     #590;
 
-    Din = 0;
+    Din = 1;
 
     // delay ppm_decode
     #800000

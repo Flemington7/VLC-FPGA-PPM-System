@@ -193,6 +193,8 @@ parameter SOF = 2'b01;
 parameter DATA = 2'b10;
 parameter EOF = 2'b11;
 
+parameter ADDRESS = 4'd0;
+
 // shift_register
 wire [7:0] parallel_data;
 wire data_ready;
@@ -200,12 +202,11 @@ reg data_ready_rst;
 
 reg [1:0] state;
 reg [3:0] data_length;
-reg [4:0] data_count;
 reg [7:0] data_temp;
 
 wire [7:0] data_line1;
 reg [9:0] clk_count;
-reg [1:0] bit_count;
+reg [3:0] bit_count; // 2-bit counter
 
 reg control;
 reg [3:0] address;
@@ -234,7 +235,7 @@ ppm_encoder_tx ppm_encoder_tx_dut1(
 shift_register u_shift_register (
     .clk(clk),
     .rst(rst),
-    .serial_in(serial_in),
+    .serial_in(Din),
     .parallel_out(parallel_data),
     .data_ready(data_ready),
     .data_ready_rst(data_ready_rst)
@@ -244,14 +245,14 @@ always @(posedge clk or negedge rst) begin
     if (!rst) begin
         state <= state_IDLE;
         data_length <= 4'd1;
-        data_count <= 5'd0;
         data_temp <= 8'd0;
-        bit_count <= 2'd0;
+        bit_count <= 'd0;
         
         clk_count <= 9'd0;
         
         control <= 0;
-        address <= 4'd0;
+        address <= ADDRESS;
+        
         order <= IDLE;
 
         data_ready_rst <= 1;
@@ -260,13 +261,12 @@ always @(posedge clk or negedge rst) begin
             state_IDLE: begin 
                 state <= state_IDLE;
                 data_length <= 4'd1;
-                data_count <= 5'd0;
                 data_temp <= 8'd0;       
+                bit_count <= 4'd0;
+
                 clk_count <= 9'd0;
-                bit_count <= 2'd0;
-            
+                
                 control <= 0;
-                address <= 4'd0;
                 order <= IDLE;
 
                 if (data_ready) begin
@@ -276,47 +276,44 @@ always @(posedge clk or negedge rst) begin
                     state <= state_memory;
                     data_length <= 4'd1; // set the maximum data length to 1 byte
 
-                    data_count <= data_count + 1; // load 1 byte data
-                    control <= 1;
-                    address <= data_count;
+                    control <= 1; // read 1 byte data
 
                     order <= SOF; // start generate SOF signal
                 end
             end
             state_memory: begin
                 clk_count <= clk_count + 1;
-                if (clk_count == 9'd127) begin // delay 128 clock cycles, wait for the generation of SOF signal, after that
+                if (clk_count == 9'd127) begin // delay 128 clock cycles, wait for the generation of SOF signal
                     state <= state_send; 
                     control <= 0;
                     address <= 0;
                     order <= DATA; // start to send data
                     clk_count <= 0;
-                    bit_count <= 2'd0;
+                    bit_count <= 4'd0;
                 end  
             end
             state_send: begin
                 clk_count <= clk_count + 1;
                 if (clk_count == 9'd127) begin
                     clk_count <= 0; 
-                    bit_count <= bit_count + 1;
-                    if (bit_count == 2'd3) begin
-                        bit_count <= 0;
-                        address <= address + 1;
-                        if (address == data_length) begin // send all the data
-                            control <= 0;
-                            address <= 4'd0;
-                            state <= state_end; 
-                            //EOF
-                            order <= EOF;   
+                    bit_count <= bit_count + 2;
+                    if (bit_count == 4'd6) begin  // send all the data
+                        bit_count <= 4'd0;
+                        control <= 0;
+                        address <= 4'd0;
+                        state <= state_end; 
+                        //EOF
+                        order <= EOF;   
                         end
                     end
                 end
             end
             state_end: begin 
                 clk_count <= clk_count + 1;
-                if (clk_count == 9'd63) begin
+                if (clk_count == 9'd63) begin // delay 64 clock cycles, wait for the generation of EOF signal
+                    data_count <= 0;
                     state <= state_IDLE; 
-                    order <= IDLE;   
+                    order <= IDLE;
                 end
             end
         endcase

@@ -50,7 +50,7 @@ always @(posedge clk or negedge rst) begin
             end else if (data_flag == 1'b1) begin
                 shift_reg <= {shift_reg[6:0], serial_in};
                 count <= count + 1;
-                if (count == 4'd7) begin
+                if (count == 4'd8) begin
                     parallel_out <= shift_reg;
                     data_ready <= 1;
                     data_flag <= 0;

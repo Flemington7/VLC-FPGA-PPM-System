@@ -114,6 +114,9 @@ parameter EOF = 2'b11;
 
 wire [7:0] data_0;
 wire [7:0] data_1;
+wire [7:0] selected_data;
+
+selected_data = (in_ppm >> (bit_count_ppm * 2)) & 8'b00000011
 
 // PPM encode
 // Calculate the first pulse position (data_0) based on the input PPM data (in_ppm)
@@ -121,13 +124,13 @@ wire [7:0] data_1;
 // 1. Right shift in_ppm by (bit_count_ppm * 2) to select the relevant 2-bit segment
 // 2. Mask the shifted value with 8'b00000011 to isolate the 2-bit segment
 // 3. Multiply the isolated 2-bit value by 2 and add 1 to determine the pulse position (ensures it's an odd number)
-// 4. Multiply by 16 to scale the pulse position to the appropriate time window, so transmit 2-bit cost 128 clk cycle
-assign data_0 = 16 * (((in_ppm >> (bit_count_ppm * 2)) & 8'b00000011) * 2 + 1);
+// 4. Multiply by 16 to scale the pulse position to the appropriate time window, so transmit 2-bit cost 128 clk cycles
+assign data_0 = 16 * ({selected_data[7:2], selected_data[0], selected_data[1]} * 2 + 1);
 
 // Calculate the second pulse position (data_1) based on the same 2-bit segment
 // This follows the same steps as data_0, but adds an additional 16 to shift the pulse position
 // This provides a second time point in the same time window for the pulse
-assign data_1 = 16 * (((in_ppm >> (bit_count_ppm * 2)) & 8'b00000011) * 2 + 1) + 16;
+assign data_1 = 16 * ({selected_data[7:2], selected_data[0], selected_data[1]} * 2 + 1) + 16;
 
                
 always @(posedge clk or negedge rst) begin

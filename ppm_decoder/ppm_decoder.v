@@ -1,9 +1,9 @@
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
+// Company: Tsinghua University
+// Engineer: Wentao Ye
 // 
 // Create Date: 2024/06/22 13:50:00
-// Design Name: 
+// Design Name: VLC system
 // Module Name: ppm_decoder
 // Project Name: 
 // Target Devices: 
@@ -17,6 +17,9 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
+
+// convert the serial data to parallel data
+
 `timescale 1ns / 1ps
 
 module ppm_decoder(

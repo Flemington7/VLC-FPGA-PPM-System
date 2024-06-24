@@ -116,7 +116,7 @@ wire [7:0] data_0;
 wire [7:0] data_1;
 wire [7:0] selected_data;
 
-selected_data = (in_ppm >> (bit_count_ppm * 2)) & 8'b00000011
+assign selected_data = (in_ppm >> (bit_count_ppm * 2)) & 8'b00000011
 
 // PPM encode
 // Calculate the first pulse position (data_0) based on the input PPM data (in_ppm)
